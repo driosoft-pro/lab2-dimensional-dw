@@ -47,35 +47,35 @@ A retail technology company needs to consolidate sales information across all ch
 
 ```
 ┌──────────────────────┐
-│  Business             │
-│  Requirements (R1-R5) │
+│  Business              │
+│  Requirements (R1-R5)  │
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
-│  Source Data          │
-│  sales_transactions   │
-│  reference_data.json  │
+│  Source Data           │
+│  sales_transactions    │
+│  reference_data.json   │
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
-│  ETL Pipeline         │
-│  Extract → Transform  │
-│  → Load               │
+│  ETL Pipeline          │
+│  Extract → Transform   │
+│  → Load                │
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
-│  Dimensional Model    │
-│  Star Schema (SQLite) │
+│  Dimensional Model     │
+│  Star Schema (SQLite)  │
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
-│  SQL Queries / KPIs   │
-│  + Visualizations     │
+│  SQL Queries / KPIs    │
+│  + Visualizations      │
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
-│  Business Decisions   │
-│  Dashboards           │
+│  Business Decisions    │
+│  Dashboards            │
 └──────────────────────┘
 ```
 
@@ -96,16 +96,16 @@ A retail technology company needs to consolidate sales information across all ch
 
 ```
                     ┌─────────────────┐
-                    │    DimDate       │
+                    │    DimDate        │
                     ├─────────────────┤
-                    │ date_key (PK)   │
-                    │ full_date       │
-                    │ day             │
-                    │ month           │
-                    │ year            │
-                    │ month_name      │
+                    │ date_key (PK)     │
+                    │ full_date         │
+                    │ day               │
+                    │ month             │
+                    │ year              │
+                    │ month_name        │
                     └────────┬────────┘
-                             │
+                              │
 ┌─────────────┐    ┌────────┴────────┐    ┌──────────────┐
 │ DimProduct  │    │  FactSales      │    │  DimStore    │
 ├─────────────┤    ├─────────────────┤    ├──────────────┤
