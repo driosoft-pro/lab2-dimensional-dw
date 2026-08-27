@@ -46,37 +46,37 @@ A retail technology company needs to consolidate sales information across all ch
 ## 4. System Architecture
 
 ```
-┌───────────────────────┐
+┌──────────────────────┐
 │  Business             │
 │  Requirements (R1-R5) │
-└──────────┬────────────┘
+└──────────┬───────────┘
            ▼
-┌───────────────────────┐
+┌──────────────────────┐
 │  Source Data          │
 │  sales_transactions   │
 │  reference_data.json  │
-└──────────┬────────────┘
+└──────────┬───────────┘
            ▼
-┌───────────────────────┐
+┌──────────────────────┐
 │  ETL Pipeline         │
 │  Extract → Transform  │
 │  → Load               │
-└──────────┬────────────┘
+└──────────┬───────────┘
            ▼
-┌───────────────────────┐
+┌──────────────────────┐
 │  Dimensional Model    │
 │  Star Schema (SQLite) │
-└──────────┬────────────┘
+└──────────┬───────────┘
            ▼
-┌───────────────────────┐
+┌──────────────────────┐
 │  SQL Queries / KPIs   │
 │  + Visualizations     │
-└──────────┬────────────┘
+└──────────┬───────────┘
            ▼
-┌───────────────────────┐
+┌──────────────────────┐
 │  Business Decisions   │
 │  Dashboards           │
-└───────────────────────┘
+└──────────────────────┘
 ```
 
 ---
@@ -95,17 +95,17 @@ A retail technology company needs to consolidate sales information across all ch
 ### 5.2 Star Schema Diagram
 
 ```
-                   ┌─────────────────┐
-                   │    DimDate      │
-                   ├─────────────────┤
-                   │ date_key (PK)   │
-                   │ full_date       │
-                   │ day             │
-                   │ month           │
-                   │ year            │
-                   │ month_name      │
-                   └────────┬────────┘
-                            │
+                    ┌─────────────────┐
+                    │    DimDate       │
+                    ├─────────────────┤
+                    │ date_key (PK)   │
+                    │ full_date       │
+                    │ day             │
+                    │ month           │
+                    │ year            │
+                    │ month_name      │
+                    └────────┬────────┘
+                             │
 ┌─────────────┐    ┌────────┴────────┐    ┌──────────────┐
 │ DimProduct  │    │  FactSales      │    │  DimStore    │
 ├─────────────┤    ├─────────────────┤    ├──────────────┤
@@ -118,14 +118,14 @@ A retail technology company needs to consolidate sales information across all ch
 │ unit_cost   │    │ gross_sales     │    └──────────────┘
 └─────────────┘    │ net_sales       │
                    │ discount_amount │
-┌─────────────┐    │ cost_amount     │    ┌───────────────┐
-│ DimChannel  │    │ gross_profit    │    │ DimPromotion  │
-├─────────────┤    └─────────────────┘    ├───────────────┤
-│ channel_key │                           │ promotion_key │
-│ channel_id  │                           │ promotion_id  │
+┌─────────────┐    │ cost_amount     │    ┌──────────────┐
+│ DimChannel  │    │ gross_profit    │    │ DimPromotion │
+├─────────────┤    └─────────────────┘    ├──────────────┤
+│ channel_key │                           │ promotion_key│
+│ channel_id  │                           │ promotion_id │
 │ channel_name│                           │ promotion_name│
-└─────────────┘                           │ discount_pct  │
-                                          └───────────────┘
+└─────────────┘                           │ discount_pct │
+                                          └──────────────┘
 ```
 
 > **Note:** The diagram above is a simplified representation. The full diagram is available in `docs/star_schema.png`.
