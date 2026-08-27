@@ -49,11 +49,11 @@ A retail technology company needs to consolidate sales information across all ch
 
 ```mermaid
 flowchart TD
-    A["📋 Business Requirements\nR1 • R2 • R3 • R4 • R5"] --> B["📁 Source Data\nsales_transactions.csv\nreference_data.json"]
-    B --> C["⚙️ ETL Pipeline\nExtract → Transform → Load"]
-    C --> D["🗄️ Dimensional Model\nStar Schema (SQLite)"]
-    D --> E["📊 SQL Queries / KPIs\n+ Visualizations"]
-    E --> F["✅ Business Decisions\nDashboards & Reports"]
+    A["Business Requirements\nR1 - R2 - R3 - R4 - R5"] --> B["Source Data\nsales_transactions.csv\nreference_data.json"]
+    B --> C["ETL Pipeline\nExtract - Transform - Load"]
+    C --> D["Dimensional Model\nStar Schema (SQLite)"]
+    D --> E["SQL Queries / KPIs\n+ Visualizations"]
+    E --> F["Business Decisions\nDashboards & Reports"]
 
     style A fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
     style B fill:#FFF3E0,stroke:#E65100,color:#BF360C

@@ -23,11 +23,11 @@
 
 | Task | Assignee | Status | Priority |
 |------|----------|--------|----------|
-| Read and analyze the lab specification PDF | All | ✅ Done | High |
+| Read and analyze the lab specification PDF | All | Done | High |
 | Create requirements traceability table (Part A) | Samuel | ⬜ To Do | High |
 | Define dimensional model: grain, dimensions, facts | Daniel | ⬜ To Do | High |
 | Design Star Schema diagram (Part C) | Mauricio | ⬜ To Do | High |
-| Set up repository structure and documentation | Deyton | ✅ Done | Medium |
+| Set up repository structure and documentation | Deyton | Done | Medium |
 
 **Sprint 1 Deliverable:** Completed traceability table + Star Schema diagram.
 
