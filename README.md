@@ -45,38 +45,76 @@ A retail technology company needs to consolidate sales information across all ch
 
 ## 4. System Architecture
 
+### 4.1 Conceptual Flow (Systems Thinking)
+
+```mermaid
+flowchart TD
+    A["📋 Business Requirements\nR1 • R2 • R3 • R4 • R5"] --> B["📁 Source Data\nsales_transactions.csv\nreference_data.json"]
+    B --> C["⚙️ ETL Pipeline\nExtract → Transform → Load"]
+    C --> D["🗄️ Dimensional Model\nStar Schema (SQLite)"]
+    D --> E["📊 SQL Queries / KPIs\n+ Visualizations"]
+    E --> F["✅ Business Decisions\nDashboards & Reports"]
+
+    style A fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    style B fill:#FFF3E0,stroke:#E65100,color:#BF360C
+    style C fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    style D fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+    style E fill:#FBE9E7,stroke:#BF360C,color:#BF360C
+    style F fill:#E0F7FA,stroke:#006064,color:#006064
 ```
-┌──────────────────────┐
-│  Business              │
-│  Requirements (R1-R5)  │
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│  Source Data           │
-│  sales_transactions    │
-│  reference_data.json   │
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│  ETL Pipeline          │
-│  Extract → Transform   │
-│  → Load                │
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│  Dimensional Model     │
-│  Star Schema (SQLite)  │
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│  SQL Queries / KPIs    │
-│  + Visualizations      │
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│  Business Decisions    │
-│  Dashboards            │
-└──────────────────────┘
+
+### 4.2 Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         ETL PIPELINE                                    │
+│                                                                         │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐              │
+│  │   EXTRACT     │    │  TRANSFORM   │    │     LOAD     │              │
+│  │              │    │              │    │              │              │
+│  │ • Read CSV   │───►│ • Map IDs    │───►│ • Dimensions │              │
+│  │ • Read JSON  │    │ • Calc KPIs  │    │ • Fact Table │              │
+│  │ • Validate   │    │ • Surrogate  │    │ • FK constr. │              │
+│  └──────────────┘    │   Keys       │    └──────┬───────┘              │
+│                      └──────────────┘           │                      │
+│                                                  ▼                      │
+│                              ┌──────────────────────────┐              │
+│                              │   SQLite Data Warehouse   │              │
+│                              │   retail_dw.db            │              │
+│                              └──────────────────────────┘              │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.3 Data Flow Detail
+
+```
+┌─────────────────┐
+│ sales_transactions.csv          │  1,000 rows
+│ • sale_line_id, transaction_id  │─────────────┐
+│ • sale_date, store_id           │              │
+│ • product_id, channel_id        │              ▼
+│ • promotion_id, quantity        │    ┌─────────────────┐
+│ • unit_price_sale               │    │    DIMENSIONS     │
+└─────────────────┘               │    │                   │
+                                  │    │  DimDate          │
+┌─────────────────┐               │    │  DimProduct       │
+│ reference_data.json             │    │  DimStore         │
+│ • products (4 categories)       │───►│  DimChannel       │
+│ • stores (2 physical + 1 online)│    │  DimPromotion     │
+│ • channels (3)                  │    └────────┬──────────┘
+│ • promotions (multiple)         │             │
+└─────────────────┘               │             ▼
+                                  │    ┌─────────────────┐
+                                  │    │   FactSales      │
+                                  └───►│  (1,000 rows)    │
+                                       │  Surrogate Keys  │
+                                       │  Measures:       │
+                                       │  • gross_sales   │
+                                       │  • net_sales     │
+                                       │  • discount_amt  │
+                                       │  • cost_amount   │
+                                       │  • gross_profit  │
+                                       └─────────────────┘
 ```
 
 ---
@@ -94,41 +132,111 @@ A retail technology company needs to consolidate sales information across all ch
 
 ### 5.2 Star Schema Diagram
 
-```
-                    ┌─────────────────┐
-                    │    DimDate        │
-                    ├─────────────────┤
-                    │ date_key (PK)     │
-                    │ full_date         │
-                    │ day               │
-                    │ month             │
-                    │ year              │
-                    │ month_name        │
-                    └────────┬────────┘
-                              │
-┌─────────────┐    ┌────────┴────────┐    ┌──────────────┐
-│ DimProduct  │    │  FactSales      │    │  DimStore    │
-├─────────────┤    ├─────────────────┤    ├──────────────┤
-│ product_key │◄───│ date_key (FK)   │───►│ store_key    │
-│ product_id  │    │ product_key(FK) │    │ store_id     │
-│ product_name│    │ store_key (FK)  │    │ store_name   │
-│ category    │    │ channel_key(FK) │    │ city         │
-│ brand       │    │ promotion_key   │    │ region       │
-│ list_price  │    │ quantity        │    │ channel_id   │
-│ unit_cost   │    │ gross_sales     │    └──────────────┘
-└─────────────┘    │ net_sales       │
-                   │ discount_amount │
-┌─────────────┐    │ cost_amount     │    ┌──────────────┐
-│ DimChannel  │    │ gross_profit    │    │ DimPromotion │
-├─────────────┤    └─────────────────┘    ├──────────────┤
-│ channel_key │                           │ promotion_key│
-│ channel_id  │                           │ promotion_id │
-│ channel_name│                           │ promotion_name│
-└─────────────┘                           │ discount_pct │
-                                          └──────────────┘
+```mermaid
+erDiagram
+    DimDate {
+        int date_key PK
+        text full_date
+        int day
+        int month
+        int year
+        text month_name
+    }
+
+    DimProduct {
+        int product_key PK
+        text product_id
+        text product_name
+        text category
+        text brand
+        real list_price
+        real unit_cost
+    }
+
+    DimStore {
+        int store_key PK
+        text store_id
+        text store_name
+        text city
+        text region
+        text channel_id
+    }
+
+    DimChannel {
+        int channel_key PK
+        text channel_id
+        text channel_name
+    }
+
+    DimPromotion {
+        int promotion_key PK
+        text promotion_id
+        text promotion_name
+        real discount_pct
+    }
+
+    FactSales {
+        int sale_id PK
+        int date_key FK
+        int product_key FK
+        int store_key FK
+        int channel_key FK
+        int promotion_key FK
+        int quantity
+        real gross_sales
+        real net_sales
+        real discount_amount
+        real cost_amount
+        real gross_profit
+    }
+
+    DimDate ||--o{ FactSales : "date_key"
+    DimProduct ||--o{ FactSales : "product_key"
+    DimStore ||--o{ FactSales : "store_key"
+    DimChannel ||--o{ FactSales : "channel_key"
+    DimPromotion ||--o{ FactSales : "promotion_key"
 ```
 
-> **Note:** The diagram above is a simplified representation. The full diagram is available in `docs/star_schema.png`.
+### 5.2.1 Star Schema — Text Representation
+
+```
+                          ┌──────────────────────┐
+                          │      DimDate          │
+                          ├──────────────────────┤
+                          │ ⬤ date_key (PK)      │
+                          │    full_date          │
+                          │    day                │
+                          │    month              │
+                          │    year               │
+                          │    month_name         │
+                          └──────────┬───────────┘
+                                     │
+                                     │
+┌────────────────────┐     ┌────────┴──────────────┐     ┌────────────────────┐
+│    DimProduct      │     │      FactSales         │     │     DimStore       │
+├────────────────────┤     ├───────────────────────┤     ├────────────────────┤
+│ ⬤ product_key (PK) │◄────│  product_key (FK)     │────►│ ⬤ store_key (PK)  │
+│    product_id      │     │  date_key (FK)        │     │    store_id        │
+│    product_name    │     │  store_key (FK)       │     │    store_name      │
+│    category        │     │  channel_key (FK)     │     │    city            │
+│    brand           │     │  promotion_key (FK)   │     │    region          │
+│    list_price      │     │                       │     │    channel_id      │
+│    unit_cost       │     │  ─── Measures ───     │     └────────────────────┘
+└────────────────────┘     │  quantity             │
+                           │  gross_sales          │
+┌────────────────────┐     │  net_sales            │     ┌────────────────────┐
+│    DimChannel      │     │  discount_amount      │     │   DimPromotion     │
+├────────────────────┤     │  cost_amount          │     ├────────────────────┤
+│ ⬤ channel_key (PK) │◄────│  channel_key (FK)     │────►│ ⬤ promotion_key    │
+│    channel_id      │     │  gross_profit         │     │    promotion_id    │
+│    channel_name    │     └───────────────────────┘     │    promotion_name  │
+└────────────────────┘                                   │    discount_pct    │
+                                                         └────────────────────┘
+
+LEGEND:
+  ⬤  = Primary Key (Surrogate, Auto-Increment)
+  ──► = Foreign Key Relationship
+```
 
 ### 5.3 Design Justification
 
@@ -299,4 +407,4 @@ No. Every dimension and measure in the model is justified by at least one busine
 
 ## License
 
-Academic use only — Universidad EAFIT, ETL Course (G01), 2026-2.
+Academic use only — Universidad Autonoma De Occidente, ETL Course (G01), 2026-2.
