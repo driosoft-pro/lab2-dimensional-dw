@@ -1,7 +1,7 @@
 # Retail Sales Data Warehouse — Lab 2
 
 **Course:** ETL — Group 1, 2026-2  
-**Period covered:** January 1 to June 30, 2026
+
 
 ---
 
