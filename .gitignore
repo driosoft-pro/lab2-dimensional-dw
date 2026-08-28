@@ -32,3 +32,7 @@ database/*.db
 
 # Environment variables
 .env
+
+# Nix
+result
+result-*
