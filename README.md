@@ -1,6 +1,6 @@
 # Lab 2 — Dimensional Data Warehouse: Retail Technology Sales
 
-> **ETL (G01) — Universidad EAFIT**
+> **ETL (G01) — Universidad Autonoma de Occidente**
 > Unit 1, Activity 3
 
 ---
@@ -44,153 +44,92 @@ A retail technology company needs to consolidate sales information across all ch
 
 ### 4.1 General Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                            SISTEMA COMPLETO                                       │
-│                                                                                   │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                         FUENTES DE DATOS                                    │  │
-│  │                                                                             │  │
-│  │  ┌────────────────────────┐       ┌────────────────────────┐                │  │
-│  │  │ sales_transactions.csv │       │ reference_data.json    │                │  │
-│  │  │                        │       │                        │                │  │
-│  │  │ • 1,000 filas          │       │ • products (8)         │                │  │
-│  │  │ • sale_line_id         │       │ • stores (3)           │                │  │
-│  │  │ • transaction_id       │       │ • channels (3)         │                │  │
-│  │  │ • sale_date            │       │ • promotions (6)       │                │  │
-│  │  │ • store_id             │       │                        │                │  │
-│  │  │ • product_id           │       └────────────────────────┘                │  │
-│  │  │ • channel_id           │                                                 │  │
-│  │  │ • promotion_id         │                                                 │  │
-│  │  │ • quantity             │                                                 │  │
-│  │  │ • unit_price_sale      │                                                 │  │
-│  │  └────────────────────────┘                                                 │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                            │
-│                                      ▼                                            │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                         PIPELINE ETL                                         │  │
-│  │                                                                             │  │
-│  │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │  │
-│  │  │   EXTRACT    │───►│  TRANSFORM   │───►│     LOAD     │                   │  │
-│  │  │              │    │              │    │              │                   │  │
-│  │  │ • Leer CSV   │    │ • Map IDs    │    │ • Dimensions │                   │  │
-│  │  │ • Leer JSON  │    │ • Calc KPIs  │    │ • Fact Table │                   │  │
-│  │  │ • Validar    │    │ • Surrogate  │    │ • FK constr. │                   │  │
-│  │  └──────────────┘    │   Keys       │    └──────┬───────┘                   │  │
-│  │                      └──────────────┘           │                           │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                            │
-│                                      ▼                                            │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                      DATA WAREHOUSE (SQLite)                                 │  │
-│  │                                                                             │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │  │
-│  │  │ DimDate  │ │DimProduct│ │ DimStore │ │DimChannel│ │DimPromo  │          │  │
-│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘          │  │
-│  │       │             │            │             │             │               │  │
-│  │       └─────────────┴────────────┼─────────────┴─────────────┘               │  │
-│  │                                  │                                           │  │
-│  │                          ┌───────┴───────┐                                   │  │
-│  │                          │  FactSales    │                                   │  │
-│  │                          │  (1,000 rows) │                                   │  │
-│  │                          └───────────────┘                                   │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                            │
-│                                      ▼                                            │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                         SALIDAS                                               │  │
-│  │                                                                             │  │
-│  │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐           │  │
-│  │  │ SQL Queries R1-R5│  │ Visualizaciones  │  │   Notebook       │           │  │
-│  │  │ (Consola)        │  │ (PNG en docs/)   │  │  (Interactivo)   │           │  │
-│  │  └──────────────────┘  └──────────────────┘  └──────────────────┘           │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph SISTEMA_COMPLETO["SISTEMA COMPLETO"]
+        
+        subgraph FUENTES_DE_DATOS["FUENTES DE DATOS"]
+            CSV["<b>sales_transactions.csv</b><br/>• 1,000 filas<br/>• sale_line_id<br/>• transaction_id<br/>• sale_date<br/>• store_id<br/>• product_id<br/>• channel_id<br/>• promotion_id<br/>• quantity<br/>• unit_price_sale"]
+            JSON["<b>reference_data.json</b><br/>• products (8)<br/>• stores (3)<br/>• channels (3)<br/>• promotions (6)"]
+        end
+
+        subgraph PIPELINE_ETL["PIPELINE ETL"]
+            EXTRACT["<b>EXTRACT</b><br/>• Leer CSV<br/>• Leer JSON<br/>• Validar"]
+            TRANSFORM["<b>TRANSFORM</b><br/>• Map IDs<br/>• Calc KPIs<br/>• Surrogate Keys"]
+            LOAD["<b>LOAD</b><br/>• Dimensions<br/>• Fact Table<br/>• FK constr."]
+            
+            EXTRACT --> TRANSFORM --> LOAD
+        end
+
+        subgraph DATA_WAREHOUSE["DATA WAREHOUSE (SQLite)"]
+            DimDate["DimDate"]
+            DimProduct["DimProduct"]
+            DimStore["DimStore"]
+            DimChannel["DimChannel"]
+            DimPromo["DimPromo"]
+            FactSales["<b>FactSales</b><br/>(1,000 rows)"]
+
+            DimDate --> FactSales
+            DimProduct --> FactSales
+            DimStore --> FactSales
+            DimChannel --> FactSales
+            DimPromo --> FactSales
+        end
+
+        subgraph SALIDAS["SALIDAS"]
+            SQL["<b>SQL Queries R1-R5</b><br/>(Consola)"]
+            VIZ["<b>Visualizaciones</b><br/>(PNG en docs/)"]
+            NOTEBOOK["<b>Notebook</b><br/>(Interactivo)"]
+        end
+
+    end
+
+    %% Conexiones entre etapas principales
+    FUENTES_DE_DATOS --> PIPELINE_ETL
+    PIPELINE_ETL --> DATA_WAREHOUSE
+    DATA_WAREHOUSE --> SALIDAS
 ```
 
 ### 4.2 Data Flow Detail
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           FLUJO DE DATOS                                         │
-│                                                                                   │
-│  PASO 1: EXTRACT                                                                 │
-│  ┌─────────────────┐     ┌─────────────────┐                                     │
-│  │ CSV (1,000 filas)│     │ JSON (referencia)│                                     │
-│  │ • sale_date      │     │ • products       │                                     │
-│  │ • store_id       │     │ • stores         │                                     │
-│  │ • product_id     │     │ • channels       │                                     │
-│  │ • channel_id     │     │ • promotions     │                                     │
-│  │ • promotion_id   │     └─────────────────┘                                     │
-│  │ • quantity       │                                                             │
-│  │ • unit_price_sale│                                                             │
-│  └─────────────────┘                                                             │
-│         │                                                                        │
-│         ▼                                                                        │
-│  PASO 2: TRANSFORM                                                               │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                             │  │
-│  │  Mapeo de IDs a Surrogate Keys:                                             │  │
-│  │  ┌──────────────┐    ┌──────────────┐                                       │  │
-│  │  │ product_id   │───►│ product_key  │  (DimProduct)                         │  │
-│  │  │ store_id     │───►│ store_key    │  (DimStore)                           │  │
-│  │  │ channel_id   │───►│ channel_key  │  (DimChannel)                         │  │
-│  │  │ promotion_id │───►│ promotion_key│  (DimPromotion)                       │  │
-│  │  │ sale_date    │───►│ date_key     │  (DimDate: YYYYMMDD)                  │  │
-│  │  └──────────────┘    └──────────────┘                                       │  │
-│  │                                                                             │  │
-│  │  Cálculo de Medidas:                                                         │  │
-│  │  ┌───────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │ gross_sales      = quantity × list_price                             │   │  │
-│  │  │ net_sales        = quantity × unit_price_sale                        │   │  │
-│  │  │ discount_amount  = gross_sales − net_sales                           │   │  │
-│  │  │ cost_amount      = quantity × unit_cost                              │   │  │
-│  │  │ gross_profit     = net_sales − cost_amount                           │   │  │
-│  │  └───────────────────────────────────────────────────────────────────────┘   │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-│         │                                                                        │
-│         ▼                                                                        │
-│  PASO 3: LOAD                                                                    │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                             │  │
-│  │  Orden de Carga (respetando FK):                                            │  │
-│  │                                                                             │  │
-│  │  1. DimDate       ← Generado de sale_date (181 fechas)                     │  │
-│  │  2. DimProduct    ← reference_data.json → products (8 productos)            │  │
-│  │  3. DimStore      ← reference_data.json → stores (3 tiendas)               │  │
-│  │  4. DimChannel    ← reference_data.json → channels (3 canales)             │  │
-│  │  5. DimPromotion  ← reference_data.json → promotions (6 promos)            │  │
-│  │  6. FactSales     ← sales_transactions.csv (1,000 filas)                   │  │
-│  │                                                                             │  │
-│  │  ┌───────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │ SQLite Database: database/retail_dw.db                               │   │  │
-│  │  │ • 5 tablas de dimensión                                              │   │  │
-│  │  │ • 1 tabla de hechos                                                  │   │  │
-│  │  │ • PK/FK constraints enforced                                         │   │  │
-│  │  └───────────────────────────────────────────────────────────────────────┘   │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-│         │                                                                        │
-│         ▼                                                                        │
-│  PASO 4: QUERY & VISUALIZE                                                       │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                             │  │
-│  │  Queries Analíticas:                                                        │  │
-│  │  ┌───────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │ R1: Tendencia mensual de ventas netas                                │   │  │
-│  │  │ R2: Ventas por tienda y canal                                        │   │  │
-│  │  │ R3: Top categorías y marcas                                          │   │  │
-│  │  │ R4: Rendimiento de promociones                                       │   │  │
-│  │  │ R5: Margen bruto por categoría/tienda/mes                            │   │  │
-│  │  └───────────────────────────────────────────────────────────────────────┘   │  │
-│  │                                                                             │  │
-│  │  Visualizaciones:                                                           │  │
-│  │  ┌───────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │ V1: Line chart — Tendencia mensual (R1)                              │   │  │
-│  │  │ V2: Bar chart — Ventas por tienda/canal (R2)                         │   │  │
-│  │  └───────────────────────────────────────────────────────────────────────┘   │  │
-│  └─────────────────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph FLUJO_DE_DATOS["FLUJO DE DATOS"]
+
+        subgraph PASO_1["PASO 1: EXTRACT"]
+            CSV["<b>CSV (1,000 filas)</b><br/>• sale_date<br/>• store_id<br/>• product_id<br/>• channel_id<br/>• promotion_id<br/>• quantity<br/>• unit_price_sale"]
+            JSON["<b>JSON (referencia)</b><br/>• products<br/>• stores<br/>• channels<br/>• promotions"]
+        end
+
+        subgraph PASO_2["PASO 2: TRANSFORM"]
+            subgraph SK_MAPPING["Mapeo de IDs a Surrogate Keys"]
+                direction LR
+                IDs["• product_id<br/>• store_id<br/>• channel_id<br/>• promotion_id<br/>• sale_date"] --> SKs["• product_key (DimProduct)<br/>• store_key (DimStore)<br/>• channel_key (DimChannel)<br/>• promotion_key (DimPromotion)<br/>• date_key (DimDate: YYYYMMDD)"]
+            end
+
+            CALC["<b>Cálculo de Medidas:</b><br/>• gross_sales = quantity × list_price<br/>• net_sales = quantity × unit_price_sale<br/>• discount_amount = gross_sales − net_sales<br/>• cost_amount = quantity × unit_cost<br/>• gross_profit = net_sales − cost_amount"]
+        end
+
+        subgraph PASO_3["PASO 3: LOAD"]
+            LOAD_ORDER["<b>Orden de Carga (respetando FK):</b><br/>1. DimDate ← Generado de sale_date (181 fechas)<br/>2. DimProduct ← reference_data.json → products (8 productos)<br/>3. DimStore ← reference_data.json → stores (3 tiendas)<br/>4. DimChannel ← reference_data.json → channels (3 canales)<br/>5. DimPromotion ← reference_data.json → promotions (6 promos)<br/>6. FactSales ← sales_transactions.csv (1,000 filas)"]
+            
+            DB[("<b>SQLite Database: database/retail_dw.db</b><br/>• 5 tablas de dimensión<br/>• 1 tabla de hechos<br/>• PK/FK constraints enforced")]
+            
+            LOAD_ORDER --> DB
+        end
+
+        subgraph PASO_4["PASO 4: QUERY & VISUALIZE"]
+            QUERIES["<b>Queries Analíticas:</b><br/>• R1: Tendencia mensual de ventas netas<br/>• R2: Ventas por tienda y canal<br/>• R3: Top categorías y marcas<br/>• R4: Rendimiento de promociones<br/>• R5: Margen bruto por categoría/tienda/mes"]
+            
+            VIZ["<b>Visualizaciones:</b><br/>• V1: Line chart — Tendencia mensual (R1)<br/>• V2: Bar chart — Ventas por tienda/canal (R2)"]
+        end
+
+    end
+
+    %% Conexiones principales entre pasos
+    PASO_1 --> PASO_2
+    PASO_2 --> PASO_3
+    PASO_3 --> PASO_4
 ```
 
 ### 4.3 Conceptual Flow (Systems Thinking)
@@ -291,46 +230,6 @@ erDiagram
     DimPromotion ||--o{ FactSales : "promotion_key"
 ```
 
-### 5.2.1 Star Schema — Text Representation
-
-```
-                          ┌──────────────────────┐
-                          │      DimDate          │
-                          ├──────────────────────┤
-                          │ ● date_key (PK)       │
-                          │   full_date           │
-                          │   day / month / year  │
-                          │   month_name          │
-                          └──────────┬───────────┘
-                                     │
-┌────────────────────┐     ┌─────────┴──────────┐     ┌────────────────────┐
-│    DimProduct      │     │     FactSales       │     │     DimStore       │
-├────────────────────┤     ├────────────────────┤     ├────────────────────┤
-│ ● product_key (PK) │◄────│ product_key (FK)   │────►│ ● store_key (PK)  │
-│   product_id       │     │ date_key (FK)      │     │   store_id        │
-│   product_name     │     │ store_key (FK)     │     │   store_name      │
-│   category         │     │ channel_key (FK)   │     │   city            │
-│   brand            │     │ promotion_key (FK) │     │   region          │
-│   list_price       │     │                    │     │   channel_id      │
-│   unit_cost        │     │ ─── Measures ───   │     └────────────────────┘
-└────────────────────┘     │ quantity           │
-                           │ gross_sales        │
-┌────────────────────┐     │ net_sales          │     ┌────────────────────┐
-│    DimChannel      │     │ discount_amount    │     │   DimPromotion     │
-├────────────────────┤     │ cost_amount        │     ├────────────────────┤
-│ ● channel_key (PK) │◄────│ channel_key (FK)   │────►│ ● promotion_key    │
-│   channel_id       │     │ gross_profit       │     │   promotion_id     │
-│   channel_name     │     └────────────────────┘     │   promotion_name   │
-└────────────────────┘                                │   discount_pct     │
-                                                      └────────────────────┘
-
-LEGEND:
-  ●  = Primary Key (Surrogate, Auto-Increment)
-  ──► = Foreign Key Relationship
-```
-
----
-
 ## 6. Dimensions, Facts, and Measures
 
 ### Dimensions
@@ -379,11 +278,11 @@ nix develop
 python src/main.py
 
 # Or use the run script
-./run.sh              # Full pipeline
-./run.sh --schema     # Create schema only
-./run.sh --load       # Load data only
-./run.sh --queries    # Run queries only
-./run.sh --viz        # Generate visualizations only
+./scripts/run.sh              # Full pipeline
+./scripts/run.sh --schema     # Create schema only
+./scripts/run.sh --load       # Load data only
+./scripts/run.sh --queries    # Run queries only
+./scripts/run.sh --viz        # Generate visualizations only
 ```
 
 ### 7.3 Option 2: Using pip
@@ -433,7 +332,28 @@ jupyter lab
 # notebooks/01_dimensional_modeling.ipynb
 ```
 
-### 7.7 Output
+### 7.7 Windows Users
+
+```batch
+# Using pip
+pip install -r requirements.txt
+python src\main.py
+
+# Or using the batch scripts
+scripts\run.bat              :: Full pipeline
+scripts\run.bat --schema     :: Create schema only
+scripts\run.bat --load       :: Load data only
+scripts\run.bat --queries    :: Run queries only
+scripts\run.bat --viz        :: Generate visualizations only
+
+# Setup virtual environment
+scripts\setup.bat
+
+# Clean generated files
+scripts\clean.bat
+```
+
+### 7.8 Output
 
 - **Database file:** `database/retail_dw.db`
 - **Console output:** 5 SQL queries (R1–R5) + 2 visualizations saved to `docs/`
@@ -559,11 +479,16 @@ No. Every dimension and measure in the model is justified by at least one busine
 lab2-dimensional-dw/
 ├── flake.nix                    # NixOS environment (Python 3.12 + uv + Jupyter)
 ├── requirements.txt             # Python dependencies
-├── run.sh                       # Pipeline execution script
-├── setup.sh                     # Initial environment setup
-├── clean.sh                     # Clean generated files
 ├── guion.md                     # Presentation guide
 ├── README.md                    # This file
+│
+├── scripts/                     # Execution scripts
+│   ├── run.sh                   # Run pipeline (Linux/macOS)
+│   ├── run.bat                  # Run pipeline (Windows)
+│   ├── setup.sh                 # Setup environment (Linux/macOS)
+│   ├── setup.bat                # Setup environment (Windows)
+│   ├── clean.sh                 # Clean generated files (Linux/macOS)
+│   └── clean.bat                # Clean generated files (Windows)
 │
 ├── data/                        # Source data
 │   ├── sales_transactions.csv   # 1,000 sale lines
@@ -585,6 +510,7 @@ lab2-dimensional-dw/
 │   └── 01_dimensional_modeling.ipynb
 │
 └── docs/                        # Documentation and outputs
+    ├── plan.md                  # Project plan
     ├── visualization_monthly_sales.png
     └── visualization_sales_by_store.png
 ```
@@ -593,4 +519,4 @@ lab2-dimensional-dw/
 
 ## License
 
-Academic use only — Universidad EAFIT, ETL Course (G01), 2026-2.
+Academic use only — Universidad Autonoma de Occidente, ETL Course (G01), 2026-2.
