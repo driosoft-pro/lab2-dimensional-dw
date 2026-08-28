@@ -1,6 +1,6 @@
 # Project Plan — Lab 2: Dimensional Data Warehouse
 
-> **ETL (G01) — Universidad EAFIT**  
+> **ETL (G01) — Universidad Autónoma de Occidente**  
 > Sprint: 2026-2-U1-Activity3  
 > Duration: 2 weeks (Aug 25 – Sep 7, 2026)
 
