@@ -1,8 +1,5 @@
 # Lab 2 — Dimensional Data Warehouse: Retail Technology Sales
 
-> **ETL (G01) — Universidad EAFIT**
-> Unit 1, Activity 3
-> Repository: `lab2-dimensional-dw`
 
 ---
 
@@ -242,7 +239,7 @@ LEGEND:
 
 - Every dimension and measure is driven by at least one business requirement (R1–R5).
 - No unnecessary columns from source files are copied into the Data Warehouse.
-- Surrogate integer keys are used for all dimensions to ensure referential integrity and support缓慢变化维度 (SCD) if needed in the future.
+- Surrogate integer keys are used for all dimensions to ensure referential integrity.
 
 ---
 
